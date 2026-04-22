@@ -24,13 +24,14 @@ export class AuthService {
         if(!comparePass)
             throw new UnauthorizedException();
         const payload = {
-            user:user.id,
+            id:user.id,
             nombre:user.nombre,
             login:user.login,
         }
         const token = this.jwtService.sign(payload);
         return {
             access_token:token,
+            type:'bearer'
         }
     }
 }
