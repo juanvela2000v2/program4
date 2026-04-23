@@ -1,5 +1,5 @@
 import { Component, inject, signal } from "@angular/core";
-import { AuthService } from "../../core/services/auth.service";
+import { AuthService, LoginData } from "../../core/services/auth.service";
 import { Router } from "@angular/router";
 import { FormsModule } from "@angular/forms";
 import { CommonModule } from "@angular/common";
@@ -18,20 +18,30 @@ export class LoginComponent{
   showPassword = signal<boolean>(false)
   authService = inject(AuthService)
   router = inject(Router)
+  setError(msgError:string):void{
+    this.error.set(msgError);
+    this.loading.set(false);
+  }
   onSubmit(){
-    console.log("**")
     this.loading.set(true);
     this.error.set('');
-    const ok = this.authService.login(this.login,this.pass)
-    console.log(ok)
-    alert(ok)
-    if(ok){
-      alert('asdas');
-      this.router.navigate(['/dashboard']);
-    }
-    else{
-      this.error.set('Credenciales incorrectas');
-      this.loading.set(false);
-    }
+    this.authService.login(this.login,this.pass)
+    .subscribe({
+          next:(data:Partial<LoginData>)=>{
+            if(!data)
+              this.setError('Credenciales incorrectas');
+            if(data.access_token)
+            {
+              this.authService.saveToken(data.access_token);
+              this.router.navigate(['/dashboard']);
+              return ;
+            }
+            this.setError('Credenciales incorrectas');
+          },
+          error:error=>{
+            this.setError('Credenciales incorrectas');
+          },
+          complete:()=>{return false}
+      })
   }
 }
