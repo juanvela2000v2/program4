@@ -7,6 +7,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { configDB } from './config/configDataBase';
 import { JwtModule } from '@nestjs/jwt';
+import { JardinModule } from './jardin/jardin.module';
 
 @Module({
   imports: [
@@ -18,7 +19,8 @@ import { JwtModule } from '@nestjs/jwt';
       global: true,
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '60s' },
-    })
+    }),
+    JardinModule
 ],
   controllers: [AppController],
   providers: [AppService],

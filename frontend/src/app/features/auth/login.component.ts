@@ -3,6 +3,7 @@ import { AuthService, LoginData } from "../../core/services/auth.service";
 import { Router } from "@angular/router";
 import { FormsModule } from "@angular/forms";
 import { CommonModule } from "@angular/common";
+import { map } from "rxjs";
 
 @Component({
   selector:'app-login',
@@ -30,9 +31,18 @@ export class LoginComponent{
           next:(data:Partial<LoginData>)=>{
             if(!data)
               this.setError('Credenciales incorrectas');
-            if(data.access_token)
+            if(data.message)
             {
-              this.authService.saveToken(data.access_token);
+              //alert("aaa");
+              //this.authService.saveToken(data.me);
+              const pp=this.authService.checkAuth().subscribe(s=>{
+                console.log("/////",s);
+              })
+              /*(map(s=>{
+                console.log("/////",s);
+                return s
+              }))*/
+              console.log("*****",pp);
               this.router.navigate(['/dashboard']);
               return ;
             }

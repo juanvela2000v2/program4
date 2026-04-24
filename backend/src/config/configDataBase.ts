@@ -1,3 +1,4 @@
+import { JardinEntity } from "src/models/jardin/jardin";
 import { UserEntity } from "src/models/user/user";
 
 export const configDB = {
@@ -7,6 +8,6 @@ export const configDB = {
       username: process.env.DATABASE_USER|| 'root',
       password: process.env.DATABASE_PASSWORD|| '',
       database: process.env.DATABASE_NAME ||'jardinDB',
-      entities: [UserEntity],
+      entities: [JardinEntity,UserEntity,],
       synchronize: false,//solo para dev true
     }
