@@ -1,1 +1,68 @@
+<<<<<<< HEAD
 /* You can add global styles to this file, and also import other style files */
+=======
+/* ═══════════════════════════════════════════════════════════════
+   POTOSÍ LIMPIO — Global Styles
+   Este archivo es el ÚNICO que debe tener estilos base globales.
+   Los componentes tienen sus propios CSS encapsulados.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Reset completo — evita que el browser pise los componentes */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Base del documento */
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+  background-color: #0d1117;
+  color: #e6edf3;
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* El router-outlet de Angular no debe generar caja visible */
+router-outlet {
+  display: none;
+}
+
+/* Scrollbar personalizada — tema oscuro */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0d1117;
+}
+::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #484f58;
+}
+
+/* Selección de texto */
+::selection {
+  background: rgba(0, 212, 170, 0.25);
+  color: #e6edf3;
+}
+
+/* Links sin estilo base (los componentes lo manejan) */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Imágenes responsivas por defecto */
+img {
+  max-width: 100%;
+  display: block;
+}
+>>>>>>> main

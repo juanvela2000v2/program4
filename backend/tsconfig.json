@@ -4,7 +4,11 @@
     "moduleResolution": "nodenext",
     "resolvePackageJsonExports": true,
     "esModuleInterop": true,
+<<<<<<< HEAD
     "isolatedModules": true,
+=======
+    "isolatedModules": false,
+>>>>>>> main
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
