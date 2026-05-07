@@ -1,0 +1,144 @@
+/* Fondo completo */
+.background{
+  width:100%;
+  height:100vh;
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  background:
+    linear-gradient(
+      rgba(0,0,0,0.55),
+      rgba(0,0,0,0.65)
+    ),
+    url('https://i.pinimg.com/736x/fd/70/c5/fd70c5d9a7be5276ea64fb66a6c3df52.jpg');
+
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+
+  font-family:'Poppins', sans-serif;
+}
+
+/* Caja principal */
+.login-container{
+  width:380px;
+  padding:40px;
+
+  background:rgba(255,255,255,0.12);
+
+  border-radius:25px;
+
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+
+  border:1px solid rgba(255,255,255,0.25);
+
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.4),
+    inset 0 0 10px rgba(255,255,255,0.08);
+
+  text-align:center;
+
+  animation:aparecer 1s ease;
+}
+
+/* Título */
+.login-container h2{
+  color:white;
+  font-size:34px;
+  margin-bottom:25px;
+
+  text-shadow:0 0 10px rgba(0,255,150,0.5);
+}
+
+/* Inputs */
+.login-container input{
+  width:100%;
+  padding:15px;
+  margin:12px 0;
+
+  border:none;
+  outline:none;
+  border-radius:15px;
+
+  background:rgba(255,255,255,0.18);
+
+  color:white;
+  font-size:15px;
+
+  box-sizing:border-box;
+
+  transition:.3s;
+}
+
+/* Placeholder */
+.login-container input::placeholder{
+  color:rgba(255,255,255,0.75);
+}
+
+/* Focus */
+.login-container input:focus{
+  transform:scale(1.03);
+
+  background:rgba(255,255,255,0.25);
+
+  box-shadow:
+    0 0 15px #00ff95,
+    0 0 30px rgba(0,255,149,0.4);
+}
+
+/* Botón */
+.login-container button{
+  width:100%;
+  padding:15px;
+  margin-top:20px;
+
+  border:none;
+  border-radius:15px;
+
+  font-size:17px;
+  font-weight:bold;
+
+  cursor:pointer;
+
+  color:white;
+
+  background:linear-gradient(
+    135deg,
+    #00c853,
+    #00e676,
+    #00bfa5
+  );
+
+  transition:.35s;
+}
+
+/* Hover */
+.login-container button:hover{
+  transform:translateY(-3px) scale(1.02);
+
+  box-shadow:
+    0 8px 25px rgba(0,255,140,0.7);
+}
+
+/* Error */
+.error{
+  color:#ff5252;
+  margin-top:15px;
+  font-weight:bold;
+}
+
+/* Animación */
+@keyframes aparecer{
+  from{
+    opacity:0;
+    transform:translateY(40px) scale(.9);
+  }
+
+  to{
+    opacity:1;
+    transform:translateY(0) scale(1);
+  }
+}

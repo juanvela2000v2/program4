@@ -1,0 +1,18 @@
+<button
+    class="btn-volver"
+    routerLink="/menu"
+  >
+    ⬅ Volver
+  </button>
+<h2>Gestión de Rutas</h2>
+
+<input
+  [(ngModel)]="nombreRuta"
+  placeholder="Nombre de la ruta"
+>
+
+<button (click)="guardarRuta()">
+  💾 Guardar Ruta
+</button>
+
+<div id="map"></div>

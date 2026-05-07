@@ -1,0 +1,14 @@
+/* You can add global styles to this file, and also import other style files */
+body{
+  margin:0;
+  padding:0;
+  
+   background:
+    linear-gradient(
+      rgba(0,0,0,0.55),
+      rgba(0,0,0,0.65)
+    ),
+    url('https://thumbs.dreamstime.com/b/fondo-in%C3%BAtil-de-la-segregaci%C3%B3n-con-las-papeleras-reciclaje-109814255.jpg');
+
+  font-family:'Poppins', sans-serif;
+}

@@ -1,0 +1,118 @@
+<!-- 🔝 HEADER -->
+<div class="topbar">
+
+  <!-- ⬅ VOLVER -->
+  <button
+    class="btn-volver"
+    routerLink="/menu"
+  >
+    ⬅ Volver
+  </button>
+
+  <!-- 👤 USUARIO -->
+  <div class="usuario">
+
+    👤 {{ usuario }}
+
+  </div>
+
+</div>
+
+<h2>Contenedores</h2>
+
+<div class="container">
+
+  <!-- 📦 FORMULARIO -->
+  <div class="formulario">
+
+    <input
+      [(ngModel)]="nombre"
+      placeholder="Nombre"
+    >
+
+    <select [(ngModel)]="estado">
+
+      <option value="VACIO">
+        VACIO
+      </option>
+
+      <option value="MEDIO">
+        MEDIO
+      </option>
+
+      <option value="LLENO">
+        LLENO
+      </option>
+
+    </select>
+
+    <input
+      type="number"
+      [(ngModel)]="nivel"
+      placeholder="Nivel"
+    >
+
+    <p>
+      Lat: {{ lat }}
+    </p>
+
+    <p>
+      Lng: {{ lng }}
+    </p>
+
+    <button (click)="crear()">
+      Guardar Contenedor
+    </button>
+
+  </div>
+
+  <!-- 🗺️ MAPA -->
+  <div id="map"></div>
+
+  <hr>
+
+  <!-- 📋 LISTA -->
+  <h3>Lista</h3>
+
+  <div
+    *ngFor="let c of contenedoresPaginados"
+    class="card"
+  >
+
+    <b>{{ c.nombre }}</b>
+
+    <p>
+      Estado:
+      {{ c.estado }}
+    </p>
+
+    <p>
+      Nivel:
+      {{ c.nivel }}%
+    </p>
+
+  </div>
+
+  <!-- 📄 PAGINACIÓN -->
+  <div class="paginacion">
+
+    <button
+      (click)="cambiarPagina(paginaActual - 1)"
+    >
+      ⬅ Anterior
+    </button>
+
+    <span>
+      Página {{ paginaActual }}
+      de {{ totalPaginas() }}
+    </span>
+
+    <button
+      (click)="cambiarPagina(paginaActual + 1)"
+    >
+      Siguiente ➡
+    </button>
+
+  </div>
+
+</div>

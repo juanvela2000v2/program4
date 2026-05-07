@@ -1,0 +1,29 @@
+<div class="background">
+
+  <div class="login-container">
+
+    <h2>🌱 Eco Login</h2>
+
+    <input
+      type="email"
+      [(ngModel)]="email"
+      placeholder="Correo"
+    />
+
+    <input
+      type="password"
+      [(ngModel)]="password"
+      placeholder="Contraseña"
+    />
+
+    <button (click)="login()">
+      Ingresar
+    </button>
+
+    <p class="error" *ngIf="mensajeError">
+      {{ mensajeError }}
+    </p>
+
+  </div>
+
+</div>

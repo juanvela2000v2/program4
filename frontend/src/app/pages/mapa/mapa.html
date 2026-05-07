@@ -1,0 +1,55 @@
+
+<button
+    class="btn-volver"
+    routerLink="/menu"
+  >
+    ⬅ Volver
+  </button><h2>Mapa de Contenedores</h2>
+
+<div id="map"></div>
+
+<div
+  class="modal-backdrop"
+  [hidden]="!mostrarModal"
+>
+
+  <div class="modal-box">
+
+    <h2>Crear Reporte</h2>
+
+    <textarea
+      [(ngModel)]="descripcion"
+      placeholder="Descripción"
+    ></textarea>
+
+    <select [(ngModel)]="estado">
+
+      <option value="LLENO">
+        LLENO
+      </option>
+
+      <option value="MEDIO">
+        MEDIO
+      </option>
+
+      <option value="VACIO">
+        VACIO
+      </option>
+
+    </select>
+
+    <div class="acciones">
+
+      <button type="button" (click)="guardarReporte()">
+  Guardar
+</button>
+
+      <button type="button" (click)="cerrarModal()">
+        
+  Cancelar
+</button>
+    </div>
+
+  </div>
+
+</div>

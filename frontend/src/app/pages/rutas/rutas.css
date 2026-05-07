@@ -1,0 +1,89 @@
+/* 🌍 TÍTULO */
+h2 {
+  text-align: center;
+  margin: 20px 0;
+
+  font-family: 'Segoe UI', sans-serif;
+  color: #000000;
+
+  font-size: 28px;
+  font-weight: bold;
+
+  letter-spacing: 1px;
+}
+
+/* 🌱 INPUT */
+input {
+  display: block;
+  margin: 0 auto 15px auto;
+
+  width: 320px;
+  max-width: 90%;
+
+  padding: 12px;
+
+  border-radius: 10px;
+  border: 2px solid #a8e6a3;
+
+  background: #f4fff6;
+
+  font-size: 16px;
+
+  outline: none;
+
+  transition: 0.3s;
+}
+
+input:focus {
+  border-color: #27ae60;
+  box-shadow: 0 0 10px rgba(39, 174, 96, 0.3);
+}
+
+/* 🚛 BOTÓN GUARDAR RUTA */
+button {
+  display: block;
+  margin: 0 auto 15px auto;
+
+  padding: 12px 18px;
+
+  font-size: 16px;
+  font-weight: bold;
+
+  color: white;
+
+  border: none;
+  border-radius: 12px;
+
+  cursor: pointer;
+
+  background: linear-gradient(135deg, #2ecc71, #27ae60);
+
+  box-shadow: 0 6px 15px rgba(39, 174, 96, 0.3);
+
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  transform: scale(1.05);
+  background: linear-gradient(135deg, #27ae60, #1e8449);
+}
+
+/* 🗺 MAPA */
+#map {
+  height: 75vh;
+  width: 95%;
+
+  margin: 0 auto;
+
+  border-radius: 18px;
+
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+
+  border: 3px solid #2ecc71;
+}
+
+/* 🌿 CONTENEDOR GENERAL OPCIONAL */
+body {
+  background: linear-gradient(135deg, #e9f5ec, #ffffff);
+  font-family: 'Segoe UI', sans-serif;
+}
