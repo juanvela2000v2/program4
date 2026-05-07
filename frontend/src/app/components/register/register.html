@@ -1,0 +1,81 @@
+<div class="register-shell">
+
+  <div class="bg-particles">
+    <span></span><span></span><span></span><span></span>
+  </div>
+
+  <div class="register-card">
+
+    <div class="brand">
+      <div class="brand-icon">🌿</div>
+      <h1 class="brand-title">Únete a<span> Potosí Limpio</span></h1>
+      <p class="brand-sub">Crea tu cuenta ciudadana</p>
+    </div>
+
+    <!-- Éxito -->
+    <div class="alert-ok" *ngIf="exito">
+      ✅ ¡Registro exitoso! Redirigiendo al login...
+    </div>
+
+    <!-- Error -->
+    <div class="alert-error" *ngIf="error">
+      <span>⚠️</span> {{ error }}
+    </div>
+
+    <form class="register-form" (ngSubmit)="onRegister()" *ngIf="!exito">
+
+      <div class="field-group">
+        <label>Nombre completo *</label>
+        <div class="input-wrap">
+          <span class="input-icon">👤</span>
+          <input type="text" [(ngModel)]="usuario.nombre" name="nombre" placeholder="Tu nombre" />
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>Correo electrónico *</label>
+        <div class="input-wrap">
+          <span class="input-icon">✉️</span>
+          <input type="email" [(ngModel)]="usuario.email" name="email" placeholder="tu@correo.com" />
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>Teléfono (opcional)</label>
+        <div class="input-wrap">
+          <span class="input-icon">📱</span>
+          <input type="tel" [(ngModel)]="usuario.telefono" name="telefono" placeholder="70000000" />
+        </div>
+      </div>
+
+      <div class="fields-row">
+        <div class="field-group">
+          <label>Contraseña *</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input type="password" [(ngModel)]="usuario.password" name="password" placeholder="Min. 6 caracteres" />
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Confirmar contraseña *</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔑</span>
+            <input type="password" [(ngModel)]="confirmarPassword" name="confirmar" placeholder="Repite la contraseña" />
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-register" [disabled]="cargando">
+        <span *ngIf="!cargando">Crear Cuenta</span>
+        <span *ngIf="cargando">⟳ Registrando...</span>
+      </button>
+
+    </form>
+
+    <div class="register-footer">
+      ¿Ya tienes cuenta?
+      <a (click)="irLogin()" class="link-login">Inicia sesión</a>
+    </div>
+
+  </div>
+</div>

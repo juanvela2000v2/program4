@@ -1,0 +1,186 @@
+<div class="page">
+
+  <nav class="navbar">
+    <div class="brand">Potosi Limpio</div>
+    <div class="nav-links">
+      <a routerLink="/mapa" class="nav-link active">Mapa</a>
+      <a routerLink="/dashboard" *ngIf="auth.isAdmin" class="nav-link">Panel Admin</a>
+      <ng-container *ngIf="auth.isLoggedIn; else sinSesion">
+        <span class="user-chip">
+          {{ auth.isAdmin ? '[Admin]' : '[Ciudadano]' }}
+          {{ auth.currentUser?.nombre ?? auth.currentUser?.email }}
+        </span>
+        <button class="btn-logout" (click)="auth.logout()">Salir</button>
+      </ng-container>
+      <ng-template #sinSesion>
+        <a routerLink="/login"    class="nav-link">Ingresar</a>
+        <a routerLink="/register" class="nav-btn">Registrarse</a>
+      </ng-template>
+    </div>
+  </nav>
+
+  <div class="leyenda-bar">
+    <div class="leyenda-izq">
+      <div class="ley-item">
+        <span class="ley-cuad" style="background:#22c55e"></span> Sensor Normal
+      </div>
+      <div class="ley-item">
+        <span class="ley-cuad" style="background:#f97316"></span> Sensor Moderado
+      </div>
+      <div class="ley-item">
+        <span class="ley-cuad" style="background:#ef4444"></span> Sensor Peligroso
+      </div>
+      <div class="ley-sep"></div>
+      <div class="ley-item">
+        <span class="ley-circ" style="background:#ef4444"></span> Reporte Urgente
+      </div>
+      <div class="ley-item">
+        <span class="ley-circ" style="background:#f97316"></span> Reporte Moderado
+      </div>
+      <div class="ley-item">
+        <span class="ley-circ" style="background:#22c55e"></span> Reporte Resuelto
+      </div>
+    </div>
+    <span class="click-tip">Haz clic en el mapa para reportar un problema ambiental</span>
+  </div>
+
+  <div id="map" class="map-box"></div>
+
+  <!-- Sensores registrados (barra inferior) -->
+  <div class="sensores-bar" *ngIf="sensores.length > 0">
+    <div class="sb-title">Sensores activos:</div>
+    <div class="sensor-chips">
+      <div *ngFor="let s of sensores" class="sensor-chip"
+           [class.chip-fisico]="!s.esVirtual">
+        <span class="chip-dot" [style.background]="colorNivel(
+          getNivelSensor(s.id)
+        )"></span>
+        {{ s.nombre }}
+        <span class="chip-tipo">{{ s.esVirtual ? 'Virtual' : 'Fisico' }}</span>
+        <a *ngIf="auth.isAdmin" [routerLink]="['/sensor', s.id]" class="chip-link">Ver</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-strip" *ngIf="estadisticas">
+    <div class="stat-pill">
+      <span class="sp-num">{{ estadisticas.total }}</span>
+      <span class="sp-lbl">Reportes totales</span>
+    </div>
+    <div class="stat-pill" *ngFor="let s of estadisticas.porEstado">
+      <span class="sp-num" [style.color]="colorEstado(s.estado)">{{ s.cantidad }}</span>
+      <span class="sp-lbl">{{ s.estado }}</span>
+    </div>
+    <div class="stat-pill">
+      <span class="sp-num">{{ sensores.length }}</span>
+      <span class="sp-lbl">Sensores</span>
+    </div>
+  </div>
+
+  <!-- Tabla de reportes ciudadanos -->
+  <div class="tabla-section">
+    <h2 class="sec-title">Reportes Ciudadanos por Categoria</h2>
+
+    <div *ngIf="porTipo.length === 0" class="empty-state">
+      Sin reportes aun. Haz clic en el mapa para ser el primero en reportar.
+    </div>
+
+    <div *ngFor="let g of porTipo" class="grupo-card">
+      <div class="grupo-header">
+        <span>{{ labelTipo(g.tipo) }}</span>
+        <span class="grupo-badge">{{ g.items.length }}</span>
+      </div>
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>Estado</th><th>Descripcion</th>
+            <th>Reportes</th><th>Fecha</th>
+            <th *ngIf="auth.isAdmin">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let a of g.items">
+            <td>
+              <span class="badge-e" [style.background]="colorEstado(a.estado)">{{ a.estado }}</span>
+            </td>
+            <td class="desc-cell">
+              {{ (a.descripcion ?? 'Sin descripcion') | slice:0:70 }}
+              {{ (a.descripcion?.length ?? 0) > 70 ? '...' : '' }}
+            </td>
+            <td class="center">{{ a.reporteCount }}</td>
+            <td class="fecha-cell">{{ a.fechaReporte | date:'dd/MM HH:mm' }}</td>
+            <td *ngIf="auth.isAdmin">
+              <button class="ta-btn ta-g"
+                (click)="resolverModal = { show:true, alertaId:a.id, nota:'' }">OK</button>
+              <button class="ta-btn ta-r"
+                (click)="eliminarModal = { show:true, alertaId:a.id }">X</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal nuevo reporte -->
+  <div class="overlay" *ngIf="mostrarForm" (click)="cerrarForm()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="cerrarForm()">X</button>
+      <h2 class="modal-title">Nuevo Reporte</h2>
+      <p class="modal-coords">
+        Coordenadas: {{ clickLat | number:'1.4-4' }}, {{ clickLng | number:'1.4-4' }}
+      </p>
+      <div class="field">
+        <label>Tipo de Problema *</label>
+        <select [(ngModel)]="form.tipoProblema">
+          <option value="">-- Selecciona --</option>
+          <option *ngFor="let t of tipos" [value]="t.v">{{ t.l }}</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Descripcion</label>
+        <textarea [(ngModel)]="form.descripcion" rows="3"
+          placeholder="Describe lo que observas..."></textarea>
+      </div>
+      <div class="field">
+        <label>Foto de evidencia (opcional, max 5 MB)</label>
+        <input type="file" accept="image/*" (change)="onFoto($event)"/>
+      </div>
+      <button class="btn-send" (click)="enviarReporte()" [disabled]="enviando">
+        {{ enviando ? 'Enviando...' : 'Enviar Reporte' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal resolver -->
+  <div class="overlay" *ngIf="resolverModal.show" (click)="resolverModal.show=false">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="resolverModal.show=false">X</button>
+      <h2 class="modal-title">Resolver Alerta</h2>
+      <p class="modal-sub">El estado cambiara a RESUELTO y el marcador quedara en verde.</p>
+      <div class="field">
+        <label>Nota de resolucion</label>
+        <textarea [(ngModel)]="resolverModal.nota" rows="3"
+          placeholder="Como se soluciono el problema..."></textarea>
+      </div>
+      <div class="modal-btns">
+        <button class="btn-cancel" (click)="resolverModal.show=false">Cancelar</button>
+        <button class="btn-ok-green" (click)="confirmarResolver()">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal eliminar -->
+  <div class="overlay" *ngIf="eliminarModal.show" (click)="eliminarModal.show=false">
+    <div class="modal-card modal-sm" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="eliminarModal.show=false">X</button>
+      <h2 class="modal-title">Confirmar Eliminacion</h2>
+      <p class="modal-sub">Esta accion es permanente.</p>
+      <div class="modal-btns">
+        <button class="btn-cancel" (click)="eliminarModal.show=false">Cancelar</button>
+        <button class="btn-ok-red" (click)="confirmarEliminar()">Eliminar</button>
+      </div>
+    </div>
+  </div>
+
+</div>

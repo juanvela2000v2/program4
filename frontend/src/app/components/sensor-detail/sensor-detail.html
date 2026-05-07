@@ -1,0 +1,134 @@
+<div class="sd-page">
+
+  <div class="sd-topbar">
+    <a routerLink="/dashboard" class="back-btn">Volver al Panel</a>
+    <div class="sd-breadcrumb">
+      Panel Admin / Sensores /
+      <span>{{ ubicacion?.nombre ?? 'Cargando...' }}</span>
+    </div>
+  </div>
+
+  <!-- Header del sensor -->
+  <div class="sd-header" *ngIf="ubicacion">
+    <div class="sd-info">
+      <div class="sd-name">{{ ubicacion.nombre }}</div>
+      <div class="sd-meta">
+        <span class="tag" [class.tag-virtual]="ubicacion.esVirtual">
+          {{ ubicacion.esVirtual ? 'SENSOR VIRTUAL' : 'SENSOR FISICO (Arduino)' }}
+        </span>
+        <span class="tag">{{ ubicacion.tipoArea }}</span>
+        <span class="tag">Lat {{ ubicacion.latitud }} / Lng {{ ubicacion.longitud }}</span>
+      </div>
+    </div>
+    <div class="sd-live-val">
+      <div class="lv-num" [style.color]="colorNivel(nivelActual)">{{ valorActual }}</div>
+      <div class="lv-unit">RAW</div>
+      <div class="lv-nivel" [style.background]="colorNivel(nivelActual)">{{ nivelActual }}</div>
+    </div>
+  </div>
+
+  <!-- Barra de nivel -->
+  <div class="barra-wrap" *ngIf="ubicacion">
+    <div class="barra-track">
+      <div class="barra-fill" [style.width]="pct(valorActual)+'%'"
+           [style.background]="colorNivel(nivelActual)"></div>
+    </div>
+    <div class="barra-labels">
+      <span>0</span>
+      <span style="color:#f97316">300 — Moderado</span>
+      <span style="color:#ef4444">600 — Peligroso</span>
+      <span>1023</span>
+    </div>
+  </div>
+
+  <!-- Grafica en tiempo real -->
+  <div class="sd-card">
+    <div class="card-title">Lecturas en Tiempo Real</div>
+    <div class="chart-wrap">
+      <canvas #chartCanvas></canvas>
+    </div>
+  </div>
+
+  <!-- Configuracion (solo admin, solo virtuales) -->
+  <div class="sd-card" *ngIf="auth.isAdmin && ubicacion?.esVirtual">
+    <div class="card-title-row">
+      <div class="card-title">Configuracion del Simulador</div>
+      <button class="btn-edit" (click)="editandoConfig = !editandoConfig">
+        {{ editandoConfig ? 'Cancelar' : 'Editar' }}
+      </button>
+    </div>
+    <div class="config-grid">
+      <div class="cfg-field">
+        <label>Valor Minimo (RAW)</label>
+        <input type="number" [(ngModel)]="config.valorMinSimulado" [disabled]="!editandoConfig"/>
+      </div>
+      <div class="cfg-field">
+        <label>Valor Maximo (RAW)</label>
+        <input type="number" [(ngModel)]="config.valorMaxSimulado" [disabled]="!editandoConfig"/>
+      </div>
+      <div class="cfg-field">
+        <label>Intervalo (segundos)</label>
+        <input type="number" [(ngModel)]="config.intervaloSegundos" [disabled]="!editandoConfig" min="1"/>
+      </div>
+      <div class="cfg-field" *ngIf="editandoConfig">
+        <button class="btn-save" (click)="guardarConfig()">Guardar Configuracion</button>
+      </div>
+    </div>
+    <p class="cfg-nota">
+      Rango actual: {{ config.valorMinSimulado }} — {{ config.valorMaxSimulado }} RAW.
+      Umbral moderado: 300. Umbral urgente: 600.
+    </p>
+  </div>
+
+  <!-- Ultimas lecturas -->
+  <div class="sd-card">
+    <div class="card-title">Ultimas 20 Lecturas</div>
+    <div class="table-wrap">
+      <table class="sd-table">
+        <thead>
+          <tr><th>Valor RAW</th><th>Nivel</th><th>Fecha y hora</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let l of lecturas">
+            <td class="val-cell" [style.color]="colorNivel(nivel(l.valor))">{{ l.valor }}</td>
+            <td>
+              <span class="nivel-chip" [style.background]="colorNivel(nivel(l.valor))">
+                {{ nivel(l.valor) }}
+              </span>
+            </td>
+            <td class="fecha-cell">{{ l.fecha | date:'dd/MM/yy HH:mm:ss' }}</td>
+          </tr>
+          <tr *ngIf="lecturas.length === 0">
+            <td colspan="3" class="empty-row">Sin lecturas registradas aun</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Alertas del sensor -->
+  <div class="sd-card">
+    <div class="card-title">Historial de Alertas</div>
+    <div class="table-wrap">
+      <table class="sd-table">
+        <thead>
+          <tr><th>Tipo</th><th>Estado</th><th>Descripcion</th><th>Fecha</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let a of alertas">
+            <td>{{ a.tipoProblema }}</td>
+            <td>
+              <span class="nivel-chip" [style.background]="colorEstado(a.estado)">{{ a.estado }}</span>
+            </td>
+            <td class="fecha-cell">{{ a.descripcion | slice:0:60 }}</td>
+            <td class="fecha-cell">{{ a.fechaReporte | date:'dd/MM/yy HH:mm' }}</td>
+          </tr>
+          <tr *ngIf="alertas.length === 0">
+            <td colspan="4" class="empty-row">Sin alertas registradas</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>

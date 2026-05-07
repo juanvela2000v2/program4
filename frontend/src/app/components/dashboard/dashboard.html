@@ -1,0 +1,356 @@
+<div class="db-page">
+
+  <!-- ══ SIDEBAR ═══════════════════════════════════════════════ -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <span class="sb-logo">🌿</span>
+      <div>
+        <div class="sb-title">Potosí Limpio</div>
+        <div class="sb-role">Panel Administrador</div>
+      </div>
+    </div>
+
+    <nav class="sb-nav">
+<!-- Reemplazar el boton de Alertas en el sidebar: -->
+<button class="sb-item" [class.active]="tab==='alertas'" (click)="setTab('alertas')">
+  Alertas
+  <span class="sb-count">{{ estadisticas?.total ?? 0 }}</span>
+  <span class="notif-badge" *ngIf="reportesPendientes > 0">
+    {{ reportesPendientes }}
+  </span>
+</button>
+
+<!-- Los otros dos botones: -->
+<button class="sb-item" [class.active]="tab==='usuarios'"   (click)="setTab('usuarios')">
+  Usuarios
+  <span class="sb-count">{{ usuarios.length }}</span>
+</button>
+<button class="sb-item" [class.active]="tab==='ubicaciones'" (click)="setTab('ubicaciones')">
+  Ubicaciones
+  <span class="sb-count">{{ ubicaciones.length }}</span>
+</button>
+    </nav>
+
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar">{{ (auth.currentUser?.nombre ?? 'A')[0] | uppercase }}</div>
+        <div>
+          <div class="sb-uname">{{ auth.currentUser?.nombre ?? 'Admin' }}</div>
+          <div class="sb-uemail">{{ auth.currentUser?.email }}</div>
+        </div>
+      </div>
+      <div class="sb-actions">
+        <a routerLink="/mapa" class="sb-link">🗺️ Ver Mapa</a>
+        <button class="sb-logout" (click)="auth.logout()">⬡ Salir</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN ══════════════════════════════════════════════════ -->
+  <main class="main">
+
+    <!-- Header -->
+    <div class="main-header">
+      <div>
+        <h1 class="main-title">
+          {{ tab === 'alertas' ? '🚨 Gestión de Alertas' :
+             tab === 'usuarios' ? '👥 Gestión de Usuarios' : '📍 Ubicaciones de Sensores' }}
+        </h1>
+        <p class="main-sub">Sistema de monitoreo ambiental — Potosí, Bolivia</p>
+      </div>
+      <div class="live-badge">
+        <span class="live-dot"></span> EN VIVO
+      </div>
+    </div>
+
+    <!-- ── SENSOR HERO ─────────────────────────────────────── -->
+    <div class="sensor-hero">
+
+      <div class="sensor-card">
+        <div class="sensor-label">SENSOR MQ-2</div>
+        <div class="sensor-value" [style.color]="colorNivel(nivelActual)">
+          {{ valorActual }}
+        </div>
+        <div class="sensor-unit">RAW · 0–1023</div>
+        <div class="nivel-badge" [style.background]="colorNivel(nivelActual)">
+          {{ nivelActual }}
+        </div>
+        <div class="barra-wrap">
+          <div class="barra-fill" [style.width]="nivelPct(valorActual)+'%'"
+               [style.background]="colorNivel(nivelActual)"></div>
+        </div>
+        <div class="barra-labels">
+          <span>0</span><span style="color:#f97316">300</span>
+          <span style="color:#ef4444">600</span><span>1023</span>
+        </div>
+        <div class="sensor-alerta" *ngIf="alertaSensor">
+          ⚠️ Alerta activa: {{ alertaSensor.tipo }}
+        </div>
+      </div>
+
+      <!-- Stats cards -->
+      <div class="stats-grid">
+        <div class="stat-card" *ngFor="let s of estadisticas?.porEstado ?? []"
+             [style.--accent]="colorEstado(s.estado)">
+          <div class="sc-icon">
+            {{ s.estado === 'URGENTE' ? '🔴' : s.estado === 'MODERADO' ? '🟠' : '✅' }}
+          </div>
+          <div class="sc-num">{{ s.cantidad }}</div>
+          <div class="sc-label">{{ s.estado }}</div>
+        </div>
+        <div class="stat-card" style="--accent:#3b82f6">
+          <div class="sc-icon">👥</div>
+          <div class="sc-num">{{ usuarios.length }}</div>
+          <div class="sc-label">USUARIOS</div>
+        </div>
+        <div class="stat-card" style="--accent:#a855f7">
+          <div class="sc-icon">📍</div>
+          <div class="sc-num">{{ ubicaciones.length }}</div>
+          <div class="sc-label">UBICACIONES</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── GRÁFICA ─────────────────────────────────────────── -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">📈 Monitoreo en Tiempo Real — MQ-2</div>
+          <div class="chart-sub">Gases y humo · Últimas lecturas del Arduino</div>
+        </div>
+        <div class="chart-legend">
+          <span class="leg-dot" style="background:#ef4444"></span> Peligroso ≥600 &nbsp;
+          <span class="leg-dot" style="background:#f97316"></span> Moderado ≥300 &nbsp;
+          <span class="leg-dot" style="background:#22c55e"></span> Normal &lt;300
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <canvas #chartCanvas></canvas>
+      </div>
+    </div>
+
+    <!-- ══ TAB: ALERTAS ══════════════════════════════════════ -->
+    <div class="content-card" *ngIf="tab==='alertas'">
+      <div class="cc-header">
+        <h2>Todas las Alertas</h2>
+        <div class="cc-chips">
+          <span *ngFor="let s of estadisticas?.porProblema ?? []" class="cc-chip">
+            {{ s.tipoProblema }}: <b>{{ s.cantidad }}</b>
+          </span>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="dtable">
+          <thead>
+            <tr>
+              <th>#</th><th>Tipo</th><th>Estado</th><th>Fuente</th>
+              <th>Descripción</th><th>Reportes</th><th>Fecha</th><th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let a of alertas" [class.row-resuelto]="a.estado==='RESUELTO'">
+              <td class="id-cell">{{ a.id }}</td>
+              <td class="tipo-cell">{{ a.tipoProblema }}</td>
+              <td>
+                <span class="status-badge" [style.background]="colorEstado(a.estado)">
+                  {{ a.estado }}
+                </span>
+              </td>
+              <td>
+                <span class="fuente-badge" [class.fuente-sensor]="a.fuente==='SENSOR'">
+                  {{ a.fuente === 'SENSOR' ? '🔌 Sensor' : '👤 Ciudadano' }}
+                </span>
+              </td>
+              <td class="desc-cell">{{ (a.descripcion ?? '—') | slice:0:60 }}</td>
+              <td class="center">
+                <span class="reporte-num">{{ a.reporteCount }}</span>
+              </td>
+              <td class="fecha-cell">{{ a.fechaReporte | date:'dd/MM/yy HH:mm' }}</td>
+              <td class="actions-cell">
+                <button class="act-btn act-green" (click)="abrirResolver(a.id)"
+                  *ngIf="a.estado !== 'RESUELTO'" title="Resolver">✅</button>
+                <button class="act-btn act-red" (click)="abrirEliminar(a.id,'alerta')"
+                  title="Eliminar">🗑️</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ TAB: USUARIOS ═════════════════════════════════════ -->
+    <div class="content-card" *ngIf="tab==='usuarios'">
+      <div class="cc-header">
+        <h2>Usuarios del Sistema</h2>
+        <span class="cc-total">{{ usuarios.length }} registrados</span>
+      </div>
+      <div class="table-wrap">
+        <table class="dtable">
+          <thead>
+            <tr><th>#</th><th>Nombre</th><th>Email</th><th>Rol</th><th>Teléfono</th><th>Acciones</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let u of usuarios">
+              <td class="id-cell">{{ u.id }}</td>
+              <td>
+                <div class="user-row">
+                  <div class="user-avatar">{{ (u.nombre ?? u.email)[0] | uppercase }}</div>
+                  {{ u.nombre ?? '—' }}
+                </div>
+              </td>
+              <td>{{ u.email }}</td>
+              <td>
+                <span class="rol-badge" [class.rol-admin]="u.rol==='ADMIN'">
+                  {{ u.rol === 'ADMIN' ? '🔑 Admin' : '👤 Ciudadano' }}
+                </span>
+              </td>
+              <td>{{ u.telefono ?? '—' }}</td>
+              <td class="actions-cell">
+                <button class="act-btn act-blue" (click)="abrirCambiarRol(u)" title="Cambiar rol">
+                  🔄
+                </button>
+                <button class="act-btn act-red" (click)="abrirEliminar(u.id,'usuario')"
+                  [disabled]="u.id === auth.currentUser?.id" title="Eliminar">🗑️</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ TAB: UBICACIONES ══════════════════════════════════ -->
+    <div class="content-card" *ngIf="tab==='ubicaciones'">
+      <div class="cc-header"><h2>Puntos de Monitoreo</h2></div>
+
+      <!-- Form nueva ubicación -->
+<div class="form-grid">
+  <div class="fg-field">
+    <label>Nombre *</label>
+    <input [(ngModel)]="formUbicacion.nombre" placeholder="Ej: Mina Norte"/>
+  </div>
+  <div class="fg-field">
+    <label>Latitud *</label>
+    <input [(ngModel)]="formUbicacion.latitud" placeholder="-19.5836"/>
+  </div>
+  <div class="fg-field">
+    <label>Longitud *</label>
+    <input [(ngModel)]="formUbicacion.longitud" placeholder="-65.7531"/>
+  </div>
+  <div class="fg-field">
+    <label>Tipo de Area</label>
+    <select [(ngModel)]="formUbicacion.tipoArea">
+      <option value="MINERIA">Mineria</option>
+      <option value="URBANA">Urbana</option>
+      <option value="INDUSTRIAL">Industrial</option>
+      <option value="RURAL">Rural</option>
+    </select>
+  </div>
+
+  <!-- Toggle virtual -->
+  <div class="fg-field fg-full">
+    <label class="toggle-label">
+      <input type="checkbox" [(ngModel)]="formUbicacion.esVirtual"/>
+      &nbsp; Es sensor virtual (simulado)
+      <span style="color:#475569;font-size:11px;">
+        — Dejar sin marcar para el sensor fisico Arduino
+      </span>
+    </label>
+  </div>
+
+  <!-- Campos de simulacion, solo si esVirtual -->
+  <ng-container *ngIf="formUbicacion.esVirtual">
+    <div class="fg-field">
+      <label>Valor Minimo RAW</label>
+      <input type="number" [(ngModel)]="formUbicacion.valorMinSimulado" placeholder="50"/>
+    </div>
+    <div class="fg-field">
+      <label>Valor Maximo RAW</label>
+      <input type="number" [(ngModel)]="formUbicacion.valorMaxSimulado" placeholder="800"/>
+    </div>
+    <div class="fg-field">
+      <label>Intervalo (segundos)</label>
+      <input type="number" [(ngModel)]="formUbicacion.intervaloSegundos" placeholder="5" min="1"/>
+    </div>
+  </ng-container>
+
+  <div class="fg-field fg-full">
+    <button class="btn-create" (click)="crearUbicacion()">Crear Sensor</button>
+  </div>
+</div>
+
+      <div class="table-wrap" style="margin-top:16px;">
+        <table class="dtable">
+          <thead>
+            <tr><th>#</th><th>Nombre</th><th>Tipo</th><th>Latitud</th><th>Longitud</th><th>Eliminar</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let u of ubicaciones">
+              <td class="id-cell">{{ u.id }}</td>
+              <td><b>{{ u.nombre }}</b></td>
+              <td><span class="tipo-area-badge">{{ u.tipoArea }}</span></td>
+              <td class="fecha-cell">{{ u.latitud }}</td>
+              <td class="fecha-cell">{{ u.longitud }}</td>
+              <td>
+                <button class="act-btn act-red" (click)="abrirEliminar(u.id,'ubicacion')">🗑️</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main><!-- /main -->
+
+  <!-- ══ MODAL: RESOLVER ══════════════════════════════════════ -->
+  <div class="overlay" *ngIf="resolverModal.show" (click)="resolverModal.show=false">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="resolverModal.show=false">✕</button>
+      <div class="modal-icon">✅</div>
+      <h2 class="modal-title">Resolver Alerta</h2>
+      <p class="modal-sub">El estado cambiará a RESUELTO y quedará registrado en el sistema.</p>
+      <div class="field">
+        <label>Nota de resolución</label>
+        <textarea [(ngModel)]="resolverModal.nota" rows="3"
+          placeholder="Ej: Equipo técnico atendió el caso. Problema controlado a las 15:30h."></textarea>
+      </div>
+      <div class="modal-btns">
+        <button class="btn-cancel" (click)="resolverModal.show=false">Cancelar</button>
+        <button class="btn-confirm-green" (click)="confirmarResolver()">✅ Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODAL: ELIMINAR ═══════════════════════════════════════ -->
+  <div class="overlay" *ngIf="eliminarModal.show" (click)="eliminarModal.show=false">
+    <div class="modal-card modal-sm" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="eliminarModal.show=false">✕</button>
+      <div class="modal-icon">🗑️</div>
+      <h2 class="modal-title">¿Confirmar eliminación?</h2>
+      <p class="modal-sub">Esta acción no se puede deshacer.</p>
+      <div class="modal-btns">
+        <button class="btn-cancel" (click)="eliminarModal.show=false">Cancelar</button>
+        <button class="btn-confirm-red" (click)="confirmarEliminar()">Sí, eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODAL: CAMBIAR ROL ════════════════════════════════════ -->
+  <div class="overlay" *ngIf="rolModal.show" (click)="rolModal.show=false">
+    <div class="modal-card modal-sm" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="rolModal.show=false">✕</button>
+      <div class="modal-icon">🔑</div>
+      <h2 class="modal-title">Cambiar Rol</h2>
+      <p class="modal-sub">
+        <b>{{ rolModal.nombre }}</b> pasará de
+        <span class="rol-badge" [class.rol-admin]="rolModal.rolActual==='ADMIN'">{{ rolModal.rolActual }}</span>
+        &nbsp;a&nbsp;
+        <span class="rol-badge" [class.rol-admin]="rolModal.nuevoRol==='ADMIN'">{{ rolModal.nuevoRol }}</span>
+      </p>
+      <div class="modal-btns">
+        <button class="btn-cancel" (click)="rolModal.show=false">Cancelar</button>
+        <button class="btn-confirm-blue" (click)="confirmarRol()">🔄 Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+</div>
