@@ -1,0 +1,85 @@
+.panel {
+  background: #fff;
+  border: 1px solid #e3e7ef;
+  border-radius: 8px;
+  box-shadow: 0 7px 18px rgba(23, 31, 48, 0.08);
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+}
+
+.panel-title {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+
+.panel h2,
+.receipt h3,
+.panel p,
+.receipt p {
+  margin: 0;
+}
+
+.panel h2 {
+  font-size: 18px;
+}
+
+input,
+button {
+  font: inherit;
+}
+
+input {
+  border: 1px solid #d7dce3;
+  border-radius: 8px;
+  padding: 12px 14px;
+  width: 100%;
+}
+
+button {
+  background: #2358f6;
+  border: 0;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 800;
+  min-height: 42px;
+  padding: 10px 16px;
+}
+
+button:disabled {
+  background: #8da5f7;
+  cursor: default;
+}
+
+.transfer-form {
+  display: grid;
+  gap: 10px;
+}
+
+.transfer-form label {
+  color: #4a5568;
+  display: grid;
+  font-size: 13px;
+  font-weight: 800;
+  gap: 6px;
+}
+
+.payment-ok {
+  color: #08723d;
+  font-weight: 800;
+}
+
+.receipt {
+  background: #f6f8fb;
+  border: 1px solid #dfe5ef;
+  border-radius: 8px;
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+}
+
+.receipt h3 {
+  font-size: 18px;
+}

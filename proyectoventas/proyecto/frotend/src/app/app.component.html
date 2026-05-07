@@ -1,0 +1,219 @@
+<header class="topbar">
+  <button class="menu-button" aria-label="Menu">...</button>
+  <a class="brand" href="#avisos">
+    <span class="brand-mark">BY</span>
+    <span>BuscaYa Bolivia</span>
+  </a>
+  <nav>
+    <a href="#avisos">Avisos</a>
+    @if (authService.isAuthenticated()) {
+      <a href="#publicar" (click)="showPublishModal.set(true)">Publicar</a>
+    }
+    <a href="#pagos">Pagos</a>
+    <a href="#soporte">Soporte</a>
+    @if (authService.hasRole('admin') || authService.hasRole('support')) {
+      <a href="#admin">Admin</a>
+    }
+  </nav>
+  <div class="auth-header">
+    <app-auth (openAuthModalEvent)="showAuthModal.set(true)"></app-auth>
+  </div>
+</header>
+
+<main>
+  @if (isAdminPage()) {
+    <app-admin-panel></app-admin-panel>
+  } @else {
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Marketplace con publicaciones verificadas</p>
+        <h1>Que estas buscando?</h1>
+        <p>Puedes buscar avisos de trabajo, ventas de bienes raices, alquileres y anticreticos </p>
+      </div>
+      <form class="search-panel" (submit)="$event.preventDefault(); search()">
+        <lucide-icon [img]="icons.Search" size="24"></lucide-icon>
+        <input
+          name="search"
+          [ngModel]="api.query()"
+          (ngModelChange)="api.query.set($event)"
+          placeholder="Buscar casas, empleos, alquileres..."
+        />
+        <button type="submit">Buscar</button>
+      </form>
+    </section>
+
+    <section class="content-shell" id="avisos">
+      <aside class="filters">
+        <h2>Categorias</h2>
+        @for (category of categories; track category.value) {
+          <button [class.active]="api.category() === category.value" (click)="selectCategory(category.value)">
+            {{ category.label }}
+          </button>
+        }
+      </aside>
+
+      <section class="listings">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">{{ pageSubtitle() }}</p>
+            <h2>Avisos destacados</h2>
+          </div>
+          <span class="status-pill">{{ api.loading() ? 'Buscando' : 'API REST activa' }}</span>
+        </div>
+
+        <div class="cards-grid">
+          @for (listing of api.listings(); track listing.id) {
+            <article class="listing-card">
+              @if (listing.imageUrl) {
+                <img [src]="listing.imageUrl" [alt]="listing.title" />
+              }
+              <div class="card-body">
+                <div class="meta">
+                  <strong>{{ listing.location }}</strong>
+                  <span>{{ listingTypeLabel(listing.type) }}</span>
+                </div>
+                @if (listing.contactName || listing.contactPhone) {
+                  <div class="contact-line">
+                    @if (listing.contactName) {
+                      <span>{{ listing.contactName }}</span>
+                    }
+                    @if (listing.contactPhone) {
+                      <a [href]="'tel:' + listing.contactPhone">{{ listing.contactPhone }}</a>
+                    }
+                  </div>
+                }
+                <h3>{{ listing.title }}</h3>
+                <p>{{ listing.description }}</p>
+                <div class="price-row">
+                  @if (listing.price > 0) {
+                    <span>{{ listing.price | currency: listing.currency : 'symbol-narrow' : '1.0-0' }}</span>
+                  }
+                  <div class="card-actions" id="pagos">
+                    @for (method of paymentMethods; track method) {
+                      <button type="button" (click)="choosePayment(listing, method)">
+                        {{ method }}
+                      </button>
+                    }
+                    <button type="button" class="report-btn" (click)="openReport(listing)">Denunciar</button>
+                    @if (canEdit(listing)) {
+                      <button type="button" class="edit-btn" (click)="openEdit(listing)">Editar</button>
+                    }
+                    @if (canDelete(listing)) {
+                      <button type="button" class="delete-btn" (click)="deleteListing(listing)">Eliminar</button>
+                    }
+                  </div>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+
+      <aside class="side-panel">
+        <section class="panel qr-panel">
+          <div class="panel-title">
+            <lucide-icon [img]="icons.CreditCard" size="20"></lucide-icon>
+            <h2>QR Banco</h2>
+          </div>
+          @if (selectedListing() && selectedPaymentMethod() === 'QR Banco') {
+            <p>{{ selectedListing()?.title }}</p>
+            @if (qr()?.src) {
+              <img class="qr" [src]="qr()?.src" alt="QR de pago" />
+            } @else {
+              <div class="qr-placeholder">QR</div>
+            }
+            <strong>Comision plataforma: {{ qr()?.percent }}% - {{ qr()?.fee | currency: selectedListing()?.currency }}</strong>
+            <details class="qr-payload">
+              <summary>Trama QR simulada</summary>
+              <code>{{ qr()?.payload }}</code>
+            </details>
+            <button type="button" (click)="simulatePayment()" [disabled]="qr()?.paid">
+              {{ qr()?.paid ? 'Pago simulado realizado' : 'Simular pago' }}
+            </button>
+            @if (qr()?.webhookSent) {
+              <p class="payment-ok">Webhook enviado.</p>
+            }
+          } @else {
+            <p>Elige QR Banco en una publicacion para generar el QR.</p>
+          }
+        </section>
+
+        @if (selectedListing() && selectedPaymentMethod() === 'Transferencia') {
+          <app-transfer-payment [listing]="selectedListing()"></app-transfer-payment>
+        }
+
+        <section class="panel support" id="soporte">
+          <div class="panel-title">
+            <lucide-icon [img]="icons.MessageCircle" size="20"></lucide-icon>
+            <h2>Denuncias</h2>
+          </div>
+          <div class="chat-log">
+            @for (message of messages(); track message.createdAt + message.text) {
+              <p><strong>{{ message.from === 'support' ? 'Soporte' : 'Tu' }}:</strong> {{ message.text }}</p>
+            }
+          </div>
+          <div class="chat-input">
+            <input [ngModel]="supportText()" (ngModelChange)="supportText.set($event)" placeholder="Escribe tu denuncia" />
+            <button (click)="sendSupport()">Enviar</button>
+          </div>
+        </section>
+      </aside>
+    </section>
+  }
+</main>
+
+@if (reportListing()) {
+  <div class="modal-overlay" (click)="reportListing.set(null)">
+    <div class="report-modal" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="reportListing.set(null)">x</button>
+      <h2>Denunciar publicacion</h2>
+      <p>{{ reportListing()?.title }}</p>
+      <textarea [ngModel]="reportText()" (ngModelChange)="reportText.set($event)" placeholder="Describe el problema"></textarea>
+      <button type="button" (click)="sendReport()">Enviar denuncia</button>
+      @if (reportStatus()) {
+        <p class="moderation">{{ reportStatus() }}</p>
+      }
+    </div>
+  </div>
+}
+
+@if (editListing()) {
+  <div class="modal-overlay" (click)="editListing.set(null)">
+    <form class="report-modal" (click)="$event.stopPropagation()" (submit)="$event.preventDefault(); saveEdit()">
+      <button class="modal-close" type="button" (click)="editListing.set(null)">x</button>
+      <h2>Editar publicacion</h2>
+      <input
+        [ngModel]="editForm().title"
+        (ngModelChange)="updateEditField('title', $event)"
+        name="editTitle"
+        placeholder="Titulo"
+        required
+      />
+      <textarea
+        [ngModel]="editForm().description"
+        (ngModelChange)="updateEditField('description', $event)"
+        name="editDescription"
+        placeholder="Descripcion"
+        required
+      ></textarea>
+      <input
+        type="number"
+        [ngModel]="editForm().price"
+        (ngModelChange)="updateEditField('price', $event)"
+        name="editPrice"
+        placeholder="Precio"
+        required
+      />
+      <input
+        [ngModel]="editForm().location"
+        (ngModelChange)="updateEditField('location', $event)"
+        name="editLocation"
+        placeholder="Ubicacion"
+      />
+      <button type="submit">Guardar cambios</button>
+    </form>
+  </div>
+}
+
+<app-auth-modal [isOpen]="showAuthModal()" (closeEvent)="showAuthModal.set(false)"></app-auth-modal>
+<app-publish-modal [isOpen]="showPublishModal()" (closeEvent)="showPublishModal.set(false); search()"></app-publish-modal>

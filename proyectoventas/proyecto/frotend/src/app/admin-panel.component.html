@@ -1,0 +1,88 @@
+@if (authService.hasRole('admin')) {
+  <section class="admin-panel" id="admin">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Cuenta admin: admin&#64;buscaya.bo / Admin123!</p>
+        <h1>Panel administrador</h1>
+      </div>
+      <button type="button" (click)="refresh()">Actualizar</button>
+    </div>
+
+    <div class="admin-grid">
+      <section class="panel">
+        <div class="panel-title">
+          <lucide-icon [img]="icons.BarChart3" size="20"></lucide-icon>
+          <h2>Ventas y ganancia</h2>
+        </div>
+        <p><strong>Ventas realizadas:</strong> {{ adminPayments()?.count || 0 }}</p>
+        <p><strong>Total vendido:</strong> {{ (adminPayments()?.totalSales || 0) | currency:'BOB' }}</p>
+        <p><strong>Ganancia plataforma:</strong> {{ (adminPayments()?.totalProfit || 0) | currency:'BOB' }}</p>
+        <div class="compact-list">
+          @for (payment of adminPayments()?.payments || []; track payment.id) {
+            <p>{{ payment.method }} - {{ payment.amount | currency:'BOB' }} - comision {{ payment.platformFee | currency:'BOB' }}</p>
+          }
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title">
+          <lucide-icon [img]="icons.AlertTriangle" size="20"></lucide-icon>
+          <h2>Alertas Moderacion IA</h2>
+        </div>
+        <div class="compact-list">
+          @for (alert of moderationAlerts(); track alert.id) {
+            <article [class.resolved]="alert.resolved">
+              <strong>{{ alert.title }}</strong>
+              <p>{{ alert.reasons.join(', ') }}</p>
+              <button type="button" (click)="resolveAlert(alert.id)">Marcar revisado</button>
+            </article>
+          } @empty {
+            <p>No hay alertas nuevas.</p>
+          }
+        </div>
+      </section>
+
+      <section class="panel admin-wide">
+        <div class="panel-title">
+          <lucide-icon [img]="icons.Trash2" size="20"></lucide-icon>
+          <h2>Eliminar publicaciones</h2>
+        </div>
+        <div class="admin-table">
+          @for (listing of adminListings(); track listing.id) {
+            <div>
+              <span>{{ listing.title }}</span>
+              <small>{{ listing.status }} - {{ listing.type }}</small>
+              <button type="button" (click)="deleteListing(listing)">Eliminar</button>
+            </div>
+          } @empty {
+            <p>No hay publicaciones para administrar.</p>
+          }
+        </div>
+      </section>
+    </div>
+  </section>
+}
+
+@if (authService.hasRole('support') || authService.hasRole('admin')) {
+  <section class="admin-panel">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Soporte</p>
+        <h1>Denuncias recibidas</h1>
+      </div>
+      <button type="button" (click)="refreshSupportReports()">Actualizar</button>
+    </div>
+    <div class="support-reports">
+      @for (report of supportReports(); track report.id) {
+        <article class="panel" [class.resolved]="report.status === 'closed'">
+          <strong>{{ report.listingTitle || 'Denuncia general' }}</strong>
+          <p>{{ report.text }}</p>
+          <small>{{ report.status }} - {{ report.createdAt | date:'short' }}</small>
+          <button type="button" (click)="closeReport(report.id)">Cerrar caso</button>
+        </article>
+      } @empty {
+        <p>No hay denuncias registradas.</p>
+      }
+    </div>
+  </section>
+}

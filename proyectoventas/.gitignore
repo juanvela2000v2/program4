@@ -1,0 +1,9 @@
+node_modules/
+dist/
+backend/dist/
+frontend/dist/
+*.log
+.env
+backend/.env
+.angular/
+.cache/

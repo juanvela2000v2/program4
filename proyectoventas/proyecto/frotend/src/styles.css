@@ -1,0 +1,12 @@
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: #f2f4f8;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+}

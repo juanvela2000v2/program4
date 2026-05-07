@@ -1,0 +1,68 @@
+@if (listing) {
+  <section class="panel transfer-panel">
+    <div class="panel-title">
+      <h2>Transferencia</h2>
+    </div>
+    <p>{{ listing.title }}</p>
+    <form class="transfer-form" (submit)="$event.preventDefault(); submit()">
+      <label>
+        Monto
+        <input
+          type="number"
+          [ngModel]="form().amount"
+          (ngModelChange)="updateField('amount', $event)"
+          name="transferAmount"
+          min="1"
+          required
+        />
+      </label>
+      <input
+        [ngModel]="form().bank"
+        (ngModelChange)="updateField('bank', $event)"
+        name="bank"
+        placeholder="Banco"
+        required
+      />
+      <input
+        [ngModel]="form().accountName"
+        (ngModelChange)="updateField('accountName', $event)"
+        name="accountName"
+        placeholder="Titular de la cuenta"
+        required
+      />
+      <input
+        [ngModel]="form().accountNumber"
+        (ngModelChange)="updateField('accountNumber', $event)"
+        name="accountNumber"
+        placeholder="Numero de cuenta"
+        required
+      />
+      <input
+        [ngModel]="form().reference"
+        (ngModelChange)="updateField('reference', $event)"
+        name="reference"
+        placeholder="Referencia o comprobante"
+      />
+      <button type="submit" [disabled]="paid()">
+        {{ paid() ? 'Transferencia pagada' : 'Registrar transferencia' }}
+      </button>
+      @if (status()) {
+        <p class="payment-ok">{{ status() }}</p>
+      }
+    </form>
+
+    @if (receipt()) {
+      <article class="receipt">
+        <h3>Comprobante</h3>
+        <p><strong>Nro:</strong> {{ receipt()?.id }}</p>
+        <p><strong>Publicacion:</strong> {{ receipt()?.listingTitle }}</p>
+        <p><strong>Monto:</strong> {{ receipt()?.amount | currency: listing.currency }}</p>
+        <p><strong>Banco:</strong> {{ receipt()?.bank }}</p>
+        <p><strong>Titular:</strong> {{ receipt()?.accountName }}</p>
+        <p><strong>Cuenta:</strong> {{ receipt()?.accountNumber }}</p>
+        <p><strong>Referencia:</strong> {{ receipt()?.reference || 'Sin referencia' }}</p>
+        <p><strong>Fecha:</strong> {{ receipt()?.createdAt | date:'short' }}</p>
+      </article>
+    }
+  </section>
+}
